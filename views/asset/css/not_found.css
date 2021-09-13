@@ -1,0 +1,11 @@
+body{
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    background-image: url(/views/asset/img/not_found.jpg);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 40%;
+    /* background-size: cover; */
+}

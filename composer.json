@@ -1,0 +1,23 @@
+{
+    "name": "alexn/todo_list_new",
+    "description": "MVC",
+    "autoload": {
+        "psr-4": {
+            "Alexn\\TodoListNew\\": "src/",
+            "controllers\\":"controllers/",
+            "models\\":"models/",
+            "core\\":"core/",
+            "service\\":"service/"
+        },
+        "files":["config/config.php"]
+    },
+    "authors": [
+        {
+            "name": "AleksandrBubnov",
+            "email": "alexnfs@mail.ru"
+        }
+    ],
+    "require": {
+        "php":"^8.0"
+    }
+}
