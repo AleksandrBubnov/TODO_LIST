@@ -32,7 +32,7 @@ try {
         `completed` BOOLEAN NOT NULL DEFAULT FALSE,
         `position` INT(11) NOT NULL  DEFAULT 1,
         `created_at` DATETIME DEFAULT NOW(),
-        `completed_at` DATETIME DEFAULT NOW(),
+        `completed_at` DATETIME DEFAULT NULL,
         PRIMARY KEY (`id`),
         FOREIGN KEY `FK_USER_TASK` (`user_id`) REFERENCES `users`(`id`),
         FOREIGN KEY `FK_LIST_TASK` (`list_id`) REFERENCES `lists`(`id`)
