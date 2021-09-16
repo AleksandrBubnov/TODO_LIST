@@ -7,6 +7,7 @@ use core\ConnectDB;
 abstract class BaseModel
 {
     static $table = 'table';
+    static $sql_str = '';
 
     abstract public function rules(): array;
 
@@ -130,29 +131,68 @@ abstract class BaseModel
         $fields = get_object_vars($this);
         $keys = [];
         $values = [];
+        $values_update = [];
         foreach ($fields as $key => $value) {
             if ($value) {
                 $keys[] = "`$key`";
                 $values[] = ":$key";
+                $values_update[] = "`$key`=:$key";
             }
         }
         $conn = ConnectDB::connect();
         $table = static::$table;
-        $keys = implode(', ', $keys);
-        $values = implode(', ', $values);
-        $sql = "INSERT INTO `$table` ($keys) VALUES ($values)";
-        // echo $sql;
-        // die();
-        $stmt = $conn->prepare("INSERT INTO `$table` ($keys) VALUES ($values)");
+        if ($this->id) {
+            $sql_set = implode(', ', $values_update);
+            $stmt = $conn->prepare("UPDATE `$table` SET $sql_set WHERE id=" . $this->id);
+        } else {
+            $keys = implode(', ', $keys);
+            $values = implode(', ', $values);
+            $stmt = $conn->prepare("INSERT INTO `$table` ($keys) VALUES ($values)");
+        }
         foreach ($fields as $key => $value) {
-            if ($value) {
+            if (isset($value)) {
                 $stmt->bindParam(":$key", $fields[$key]);
             }
         }
+
         if ($stmt->execute()) {
-            $this->id = $conn->lastInsertId();
+            if (!$this->id) $this->id = $conn->lastInsertId();
             return $this;
         }
         return false;
+    }
+
+    static public function find()
+    {
+        $table = static::$table;
+        static::$sql_str = "SELECT * FROM `$table`";
+        return new static;
+    }
+    public function where($params = [])
+    {
+        if ($params) {
+            $sql = [];
+            foreach ($params as $key => $value) {
+                $value = htmlspecialchars($value);
+                $sql[] = "`$key` = '$value'";
+            }
+            static::$sql_str .= " WHERE " . implode(' AND', $sql);
+        }
+        return $this;
+    }
+    public function one()
+    {
+        $conn = ConnectDB::connect();
+        $stmt = $conn->prepare(static::$sql_str);
+        $stmt->execute();
+        $result = $stmt->fetch(\PDO::FETCH_OBJ);
+        if ($result) {
+            $obj = new static;
+            foreach ($result as $key => $value) {
+                $obj->{$key} = $result->{$key};
+            }
+            return $obj;
+        }
+        return $result;
     }
 }

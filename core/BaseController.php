@@ -2,13 +2,13 @@
 
 namespace core;
 
-use GuzzleHttp\Psr7\Header;
+// use GuzzleHttp\Psr7\Header;
 
 class BaseController
 {
     protected $layot;
 
-    public function render($view, array $params = [])
+    public function render($view, array $params = []) // открывает view`шку
     {
         $className = lcfirst(
             str_replace(
@@ -41,8 +41,13 @@ class BaseController
         }
     }
 
-    public function redirect($path)
+    public function redirect($path) // переходит на другой контроллер
     {
         Header('Location: ' . $path);
+    }
+
+    public function passwordHasher($value)
+    {
+        return sha1(SALT . $value . SALT);
     }
 }

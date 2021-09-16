@@ -12,7 +12,7 @@ try {
         `id` INT(10) UNSIGNED AUTO_INCREMENT,
         `email` VARCHAR(255) NOT NULL COLLATE 'utf8_general_ci',
         `password` VARCHAR(255) NOT NULL COLLATE 'utf8_general_ci',
-        `confirm_email` BOOLEAN DEFAULT FALSE,
+        `confirm_email` BOOLEAN DEFAULT 0,
         `created_at` DATETIME DEFAULT NOW(),
         PRIMARY KEY (`id`)
     );
@@ -22,14 +22,14 @@ try {
         `user_id` INT(10) UNSIGNED NOT NULL,
         `created_at` DATETIME DEFAULT NOW(),
         PRIMARY KEY (`id`),
-        FOREIGN KEY `FK_USER_LIST` (`user_id`) REFERENCES `users`(`id`)
+        FOREIGN KEY `FK_USER_LIST` (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
     );
     CREATE TABLE IF NOT EXISTS `tasks` (
         `id` INT(10) UNSIGNED AUTO_INCREMENT,
         `name` VARCHAR(255) NOT NULL COLLATE 'utf8_general_ci',
         `user_id` INT(10) UNSIGNED NOT NULL,
         `list_id` INT(10) UNSIGNED NOT NULL,
-        `completed` BOOLEAN NOT NULL DEFAULT FALSE,
+        `completed` BOOLEAN NOT NULL DEFAULT 0,
         `position` INT(11) NOT NULL  DEFAULT 1,
         `created_at` DATETIME DEFAULT NOW(),
         `completed_at` DATETIME DEFAULT NULL,

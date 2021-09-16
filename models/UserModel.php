@@ -9,6 +9,7 @@ class UserModel extends BaseModel
     public  $id;
     public  $email;
     public  $password;
+    public  $confirm_email;
 
     static $table = 'users';
 

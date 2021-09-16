@@ -24,6 +24,10 @@ class ComposerStaticInitc25f9c0552bb99e111b77e18ec53ab15
             'core\\' => 5,
             'controllers\\' => 12,
         ),
+        'P' => 
+        array (
+            'PHPMailer\\PHPMailer\\' => 20,
+        ),
         'A' => 
         array (
             'Alexn\\TodoListNew\\' => 18,
@@ -46,6 +50,10 @@ class ComposerStaticInitc25f9c0552bb99e111b77e18ec53ab15
         'controllers\\' => 
         array (
             0 => __DIR__ . '/../..' . '/controllers',
+        ),
+        'PHPMailer\\PHPMailer\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/phpmailer/phpmailer/src',
         ),
         'Alexn\\TodoListNew\\' => 
         array (

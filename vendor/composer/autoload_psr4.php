@@ -10,5 +10,6 @@ return array(
     'models\\' => array($baseDir . '/models'),
     'core\\' => array($baseDir . '/core'),
     'controllers\\' => array($baseDir . '/controllers'),
+    'PHPMailer\\PHPMailer\\' => array($vendorDir . '/phpmailer/phpmailer/src'),
     'Alexn\\TodoListNew\\' => array($baseDir . '/src'),
 );
