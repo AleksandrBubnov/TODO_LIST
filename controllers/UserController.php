@@ -10,6 +10,9 @@ class UserController extends BaseController
 {
     public function __construct()
     {
+        if (!isset($_SESSION)) session_start();
+        if (isset($_SESSION['Auth'])) $this->redirect('/list/index');
+
         $this->layot = true;
     }
     public function actionIndex()
@@ -21,7 +24,9 @@ class UserController extends BaseController
         // $this->redirect('/list/index'); 
         // $this->redirect('/user/create');
 
-        $this->render('index', ['model' => ['id' => 1, 'task' => 'mytask']]);
+        // $this->render('index', ['model' => ['id' => 1, 'task' => 'mytask']]);
+
+        $this->render('index');
     }
     public function actionLogin()
     {
@@ -36,6 +41,7 @@ class UserController extends BaseController
             if ($user) {
                 if ($user->confirm_email == "1") {
                     if (!isset($_SESSION)) session_start();
+                    $_SESSION['Auth'] = $user->id;
                     $this->redirect('/list/index');
                 } else {
                     if (!isset($_SESSION)) session_start();
@@ -92,6 +98,9 @@ class UserController extends BaseController
             $user = UserModel::find()->where(['id' => $id])->one();
             $user->confirm_email = true;
             if ($user->save()) {
+                if (!isset($_SESSION)) session_start();
+                $_SESSION['Auth'] = $id;
+
                 $_SESSION['success'] = 'Registration is confirmed.';
                 $this->redirect('/list/index');
             } else {
@@ -101,5 +110,13 @@ class UserController extends BaseController
                 // $this->redirect('/user/index');
             }
         }
+    }
+
+    public function actionLogout()
+    {
+        if (!isset($_SESSION)) session_start();
+        session_unset();
+        session_destroy();
+        $this->render('index');
     }
 }

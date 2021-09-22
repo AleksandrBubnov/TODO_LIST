@@ -2,8 +2,6 @@
 
 namespace core;
 
-// use GuzzleHttp\Psr7\Header;
-
 class BaseController
 {
     protected $layot;
@@ -41,7 +39,7 @@ class BaseController
         }
     }
 
-    public function redirect($path) // переходит на другой контроллер
+    public function redirect($path) // переходит на другой/-ую контроллер / страницу
     {
         Header('Location: ' . $path);
     }

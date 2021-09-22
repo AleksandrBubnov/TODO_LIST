@@ -34,8 +34,8 @@ try {
         `created_at` DATETIME DEFAULT NOW(),
         `completed_at` DATETIME DEFAULT NULL,
         PRIMARY KEY (`id`),
-        FOREIGN KEY `FK_USER_TASK` (`user_id`) REFERENCES `users`(`id`),
-        FOREIGN KEY `FK_LIST_TASK` (`list_id`) REFERENCES `lists`(`id`)
+        FOREIGN KEY `FK_USER_TASK` (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
+        FOREIGN KEY `FK_LIST_TASK` (`list_id`) REFERENCES `lists`(`id`) ON DELETE CASCADE
     );
 
     SQL;

@@ -69,7 +69,7 @@ abstract class BaseModel
 
                 case 'string':
                     foreach ($fields as $field) {
-                        if (!is_string($this->$field)) {
+                        if (!is_string($this->$field) || trim($this->$field) == "") {
                             $error_message .= "$field not string <br>";
                             $error = $error && false;
                         }
@@ -78,7 +78,7 @@ abstract class BaseModel
 
                 case 'integer':
                     foreach ($fields as $field) {
-                        if (!is_int($this->$field)) {
+                        if (!is_int(intval($this->$field))) {
                             $error_message .= "$field not integer <br>";
                             $error = $error && false;
                         }
@@ -86,7 +86,7 @@ abstract class BaseModel
                     break;
                 case 'int':
                     foreach ($fields as $field) {
-                        if (!is_int($this->$field)) {
+                        if (!is_int(intval($this->$field))) {
                             $error_message .= "$field not integer <br>";
                             $error = $error && false;
                         }
@@ -95,7 +95,7 @@ abstract class BaseModel
 
                 case 'float':
                     foreach ($fields as $field) {
-                        if (!is_float($this->$field)) {
+                        if (!is_float(floatval($this->$field))) {
                             $error_message .= "$field not float <br>";
                             $error = $error && false;
                         }
@@ -104,7 +104,10 @@ abstract class BaseModel
 
                 case 'boolean':
                     foreach ($fields as $field) {
-                        if (!is_bool($this->$field)) {
+                        // if (!is_bool(boolval($this->$field))) {
+                        // if (gettype(boolval($this->{$field})) != $key) {
+                        if (!is_bool(filter_var($this->$field, FILTER_VALIDATE_BOOLEAN))) {
+                            // $error_message .= "$field expected $key recived " . gettype($this->{$field}) . ". <br>";
                             $error_message .= "$field not boolean <br>";
                             $error = $error && false;
                         }
@@ -121,7 +124,7 @@ abstract class BaseModel
             }
         }
 
-        if (isset($_SESSION)) session_start();
+        if (!isset($_SESSION)) session_start();
         if (!$error) $_SESSION['error'] = $error_message;
 
         return $error;
@@ -139,26 +142,65 @@ abstract class BaseModel
                 $values_update[] = "`$key`=:$key";
             }
         }
-        $conn = ConnectDB::connect();
-        $table = static::$table;
-        if ($this->id) {
-            $sql_set = implode(', ', $values_update);
-            $stmt = $conn->prepare("UPDATE `$table` SET $sql_set WHERE id=" . $this->id);
-        } else {
-            $keys = implode(', ', $keys);
-            $values = implode(', ', $values);
-            $stmt = $conn->prepare("INSERT INTO `$table` ($keys) VALUES ($values)");
+
+        try {
+            $conn = ConnectDB::connect();
+            $table = static::$table;
+            if ($this->id) {
+                $sql_set = implode(', ', $values_update);
+                $stmt = $conn->prepare("UPDATE `$table` SET $sql_set WHERE id=" . $this->id);
+            } else {
+                $keys = implode(', ', $keys);
+                $values = implode(', ', $values);
+                $stmt = $conn->prepare("INSERT INTO `$table` ($keys) VALUES ($values)");
+            }
+            foreach ($fields as $key => $value) {
+                if (isset($value)) {
+                    $stmt->bindParam(":$key", $fields[$key]);
+                }
+            }
+            // die(var_dump($fields));
+
+            if ($stmt->execute()) {
+                if (!$this->id) $this->id = $conn->lastInsertId();
+                return $this;
+            }
+        } catch (\PDOException $e) {
+            // } catch (\Throwable $e) {
+            echo $e->getMessage();
+            // echo $e->();
         }
+
+        return false;
+    }
+    public function update() // for taskmodel-
+    {
+        $fields = get_object_vars($this);
+        $values_update = [];
         foreach ($fields as $key => $value) {
-            if (isset($value)) {
-                $stmt->bindParam(":$key", $fields[$key]);
+            if (!$value) {
+                $values_update[] = "`$key`= NULL";
+            } else {
+                $values_update[] = "`$key`= '$value'";
             }
         }
 
-        if ($stmt->execute()) {
-            if (!$this->id) $this->id = $conn->lastInsertId();
-            return $this;
+        try {
+            $conn = ConnectDB::connect();
+            $table = static::$table;
+            if ($this->id) {
+                $sql_set = implode(', ', $values_update);
+                $stmt = $conn->prepare("UPDATE `$table` SET $sql_set WHERE id=" . $this->id);
+            }
+
+            if ($stmt->execute()) {
+                if (!$this->id) $this->id = $conn->lastInsertId();
+                return $this;
+            }
+        } catch (\PDOException $e) {
+            // echo $e->getMessage();
         }
+
         return false;
     }
 
@@ -176,16 +218,38 @@ abstract class BaseModel
                 $value = htmlspecialchars($value);
                 $sql[] = "`$key` = '$value'";
             }
-            static::$sql_str .= " WHERE " . implode(' AND', $sql);
+            static::$sql_str .= " WHERE " . implode(' AND ', $sql);
+        }
+        return $this;
+    }
+    public function order($params = [])
+    {
+        if ($params) {
+            $sql = [];
+            $table = static::$table;
+            foreach ($params as $key => $value) {
+                if ($value) {
+                    $sql[] = "`$table`.`$value`";
+                }
+            }
+            $sql = implode(', ', $sql);
+            if ($sql) {
+                static::$sql_str .= " ORDER BY " . $sql;
+            }
         }
         return $this;
     }
     public function one()
     {
-        $conn = ConnectDB::connect();
-        $stmt = $conn->prepare(static::$sql_str);
-        $stmt->execute();
-        $result = $stmt->fetch(\PDO::FETCH_OBJ);
+        try {
+            $conn = ConnectDB::connect();
+            $stmt = $conn->prepare(static::$sql_str);
+
+            $stmt->execute();
+            $result = $stmt->fetch(\PDO::FETCH_OBJ);
+        } catch (\PDOException $e) {
+            // echo $e->getMessage();
+        }
         if ($result) {
             $obj = new static;
             foreach ($result as $key => $value) {
@@ -194,5 +258,48 @@ abstract class BaseModel
             return $obj;
         }
         return $result;
+    }
+    public function all()
+    {
+        try {
+            $conn = ConnectDB::connect();
+            $stmt = $conn->prepare(static::$sql_str);
+            $stmt->execute();
+            $result = $stmt->fetchAll(\PDO::FETCH_OBJ);
+            return $result;
+        } catch (\PDOException $e) {
+            // echo $e->getMessage();
+        }
+    }
+    public static function delete($params = [])
+    {
+        try {
+            $conn = ConnectDB::connect();
+            $table = static::$table;
+            $sql_where = [];
+            foreach ($params as $key => $value) {
+                $sql_where[] = "`$key` = '$value'";
+            }
+            $sql_where = implode(' AND ', $sql_where);
+            $sql = "DELETE FROM `$table` WHERE $sql_where";
+            $stmt = $conn->prepare($sql);
+            return $stmt->execute();
+        } catch (\PDOException $e) {
+            // echo $e->getMessage();
+        }
+    }
+
+    static public function count() // working or not?
+    {
+        try {
+            $conn = connectDB::connectDB();
+            $table = static::$table;
+            $stmt = $conn->prepare("SELECT COUNT(*) as `count` FROM $table");
+            $stmt->execute();
+            $result = $stmt->fetch(\PDO::FETCH_OBJ);
+            return $result->count;
+        } catch (\PDOException $e) {
+            // echo $e->getMessage();
+        }
     }
 }
