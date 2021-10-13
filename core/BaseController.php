@@ -8,6 +8,7 @@ class BaseController
 
     public function render($view, array $params = []) // открывает view`шку
     {
+        // echo "<script>console.log('Debug Objects: " . get_class($this) . "' );</script>";
         $className = lcfirst(
             str_replace(
                 'Controller',

@@ -292,7 +292,7 @@ abstract class BaseModel
     static public function count() // working or not?
     {
         try {
-            $conn = connectDB::connectDB();
+            $conn = ConnectDB::connect();
             $table = static::$table;
             $stmt = $conn->prepare("SELECT COUNT(*) as `count` FROM $table");
             $stmt->execute();

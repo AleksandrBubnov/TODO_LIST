@@ -6,6 +6,8 @@ $request_uri = preg_split('/\/|\?/', $_SERVER['REQUEST_URI']);
 // 1 индекс - назваание контролёра
 // 2 индекс - назваание action
 
+// echo "<script>console.log('Debug Objects => SERVER[REQUEST_URI]: " . $_SERVER['REQUEST_URI'] . "' );</script>";
+
 $controllerName = !isset($request_uri[1]) ? 'user' : ($request_uri[1] == "" ? 'user' : $request_uri[1]);
 $actionName = !isset($request_uri[2]) ? 'index' : ($request_uri[2] == "" ? 'index' : $request_uri[2]);
 
